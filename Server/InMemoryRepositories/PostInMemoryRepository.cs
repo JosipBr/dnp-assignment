@@ -1,4 +1,4 @@
-using Entities;
+using Entity;
 using RepositoryContracts;
 
 namespace InMemoryRepositories;
