@@ -8,4 +8,13 @@ public class Post
     public int UserId { get; set; }
     public int Likes { get; set; }
     public int Dislikes { get; set; }
+
+    public Post(string title, string body, int userId)
+    {
+        Title = title;
+        Body = body;
+        UserId = userId;
+        Likes = 0;
+        Dislikes = 0;
+    }
 }
