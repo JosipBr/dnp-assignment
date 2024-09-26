@@ -18,7 +18,7 @@ public class AddCommentView
 
     public async Task AddCommentAsync()
     {
-        Console.WriteLine("=== Add a Comment ===");
+        Console.WriteLine("\n=== Add a Comment ===");
 
         int postId = 0;
         Post foundPost=null;

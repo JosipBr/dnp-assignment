@@ -14,7 +14,7 @@ public class ListUsersView
 
     public async Task ListAllUsersAsync()
     {
-        Console.WriteLine("=== List of all users ===");
+        Console.WriteLine("\n=== List of all users ===");
 
         IQueryable<User> users = _userRepository.GetMany();
 

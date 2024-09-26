@@ -14,13 +14,13 @@ public class ListPostsView
 
     public async Task DisplayPostsAsync()
     {
-        Console.WriteLine("=== List of all posts ===");
+        Console.WriteLine("\n=== List of all posts ===");
 
         IQueryable<Post> posts =  _postRepository.GetManyAsync();
         
         foreach (var post in posts)
         {
-            Console.WriteLine($"ID: {post.Id}, Title: {post.Title}, User ID: {post.UserId}");
+            Console.WriteLine($"\nID: {post.Id}, Title: {post.Title}, User ID: {post.UserId}");
         }
     }
 }

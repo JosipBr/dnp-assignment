@@ -16,7 +16,7 @@ public class SinglePostView
 
     public async Task DisplayPostAsync()
     {
-        Console.WriteLine("=== View Post ===");
+        Console.WriteLine("\n=== View Post ===");
         Post foundPost = null;
         int postId = 0;
         
@@ -48,7 +48,7 @@ public class SinglePostView
         
         Console.WriteLine($"Title: {foundPost.Title}");
         Console.WriteLine($"Body: {foundPost.Body}");
-        Console.WriteLine($"Posted by User ID: {foundPost.UserId}");
+        Console.WriteLine($"Posted by User: {foundPost.UserId}");
 
         IQueryable<Comment> allComments =  _commentRepository.GetMany();
         IQueryable<Comment> postComments = allComments.Where(c => c.PostId == postId);
@@ -57,7 +57,7 @@ public class SinglePostView
             Console.WriteLine("\n=== Comments ===");
             foreach (var comment in postComments)
             {
-                Console.WriteLine($"User ID: {comment.UserId}, Comment: {comment.Body}");
+                Console.WriteLine($"\nUser ID: {comment.UserId}, Comment: {comment.Body}");
             }
         
     }

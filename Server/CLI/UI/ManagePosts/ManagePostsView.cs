@@ -23,14 +23,14 @@ public class ManagePostsView
 
         while (!exit)
         {
-            Console.WriteLine("=== Manage Posts ===");
+            Console.WriteLine("\n=== Manage Posts ===");
             Console.WriteLine("1. Create Post");
             Console.WriteLine("2. List Posts");
             Console.WriteLine("3. View Single Post");
             Console.WriteLine("4. Add Comment to Post");
             Console.WriteLine("5. Exit");
 
-            Console.Write("Choose an option: ");
+            Console.Write("\nChoose an option: ");
             string option = Console.ReadLine();
 
             switch (option)

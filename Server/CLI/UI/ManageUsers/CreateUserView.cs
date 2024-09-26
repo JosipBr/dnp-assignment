@@ -14,7 +14,7 @@ public class CreateUserView
 
     public async Task CreateNewUserAsync()
     {
-        Console.WriteLine("=== Create New User ===");
+        Console.WriteLine("\n=== Create New User ===");
 
         Console.Write("Enter username: ");
         string userName = Console.ReadLine();
@@ -30,7 +30,7 @@ public class CreateUserView
 
         User newUser = new User(userName, password);
         
-        var result = await _userRepository.AddAsync(newUser);
+        User result = await _userRepository.AddAsync(newUser);
 
         if (result != null)
         {

@@ -20,7 +20,7 @@ public class CliApp
 
         while (!exit)
         {
-            Console.WriteLine("=== Main Menu ===");
+            Console.WriteLine("\n=== Main Menu ===");
             Console.WriteLine("1. Manage Users");
             Console.WriteLine("2. Manage Posts");
             Console.WriteLine("3. Exit");

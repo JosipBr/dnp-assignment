@@ -16,7 +16,7 @@ public class CreatePostView
 
     public async Task CreateNewPostAsync()
     {
-        Console.WriteLine("=== Create New Post ===");
+        Console.WriteLine("\n=== Create New Post ===");
         
         Console.Write("Enter User ID: ");
         if (!int.TryParse(Console.ReadLine(), out int userId))

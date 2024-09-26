@@ -22,7 +22,7 @@ public class ManageUsersView
 
         while (!exit)
         {
-            Console.WriteLine("=== Manage Users ===");
+            Console.WriteLine("\n=== Manage Users ===");
             Console.WriteLine("1. Create User");
             Console.WriteLine("2. List Users");
             Console.WriteLine("3. Exit");
