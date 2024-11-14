@@ -1,0 +1,64 @@
+@page "/post-list"
+@using ApiContracts.Post
+@using BlazorApp.Components.Services
+@inject IPostService PostService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Post list</PageTitle>
+
+<h3>Post list</h3>
+
+@if (posts == null)
+{
+    <p>Loading...</p>
+}
+else if (posts.Count == 0)
+{
+    <p>There are currently no posts :(</p>
+}
+else
+{
+    foreach (var post in posts)
+    {
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">@post.Title</h5>
+                <p class="card-text">Body: @post.Body</p>
+                <p class="card-text">UserId: @post.UserId</p>
+                <p class="card-text">post id: @post.Id</p>
+                @if (!string.IsNullOrEmpty(post.UserName))
+                {
+                    <p class="card-text">Author: @post.UserName</p>
+                }
+                else
+                {
+                    <p class="card-text text-muted">Author: Username not available</p>
+                }
+
+                <a href="#" class="btn btn-primary" @onclick="() => NavigateToPostDetails(post.Id)">See full post</a>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<PostDto> posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            posts = await PostService.GetPostsAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error fetching posts: {e.Message} ");
+            throw;
+        }
+    }
+
+    private void NavigateToPostDetails(int postId)
+    {
+        NavigationManager.NavigateTo($"/post-details/{postId}");
+    }
+}

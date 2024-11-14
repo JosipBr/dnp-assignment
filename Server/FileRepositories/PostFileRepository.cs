@@ -21,7 +21,7 @@ public class PostFileRepository: IPostRepository
     {
         string postsAsJson = await File.ReadAllTextAsync(filePath);
         List<Post> posts = JsonSerializer.Deserialize<List<Post>>(postsAsJson);
-        int maxId = posts.Count > 0 ? posts.Max(x => x.Id)  : 1;
+        int maxId = posts.Count > 0 ? posts.Max(x => x.Id)+1  : 1;
         post.Id = maxId ;
         posts.Add(post);
         postsAsJson = JsonSerializer.Serialize(posts);

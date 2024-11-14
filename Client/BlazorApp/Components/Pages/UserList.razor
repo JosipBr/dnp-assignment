@@ -1,0 +1,43 @@
+@page "/user-list"
+@using BlazorApp.Components.Services
+@inject IUserService UserService
+
+<PageTitle>User list</PageTitle>
+
+<h3>User list</h3>
+
+@if (users == null)
+{
+    <p>Loading...</p>
+}
+else if (users.Count == 0)
+{
+    <p>There are currently no users found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var user in users)
+        {
+            <li>@user.UserName, @user.Id</li>
+        }
+    </ul>
+}
+
+@code{
+    private List<UserDto> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            users = await UserService.GetUsersAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error fetching users: {e.Message} ");
+            throw;
+        }
+    }
+
+}

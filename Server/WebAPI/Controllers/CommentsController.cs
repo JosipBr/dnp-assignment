@@ -13,10 +13,12 @@ namespace WebAPI.Controllers
     public class CommentsController : ControllerBase
     {
         private readonly ICommentRepository commentRepo;
+        private readonly IUserRepository userRepo;
 
-        public CommentsController(ICommentRepository commentRepo)
+        public CommentsController(ICommentRepository commentRepo, IUserRepository userRepo)
         {
             this.commentRepo = commentRepo;
+            this.userRepo  = userRepo;
         }
 
         // POST: /posts/{postId}/comments
@@ -26,24 +28,34 @@ namespace WebAPI.Controllers
             try
             {
                 Comment comment = new Comment(request.Body, request.UserId, postId);
+
                 Comment createdComment = await commentRepo.AddAsync(comment);
+
+                User user = await userRepo.GetSingleAsync(request.UserId);
+
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
 
                 CommentDto commentDto = new CommentDto
                 {
                     Id = createdComment.Id,
                     Body = createdComment.Body,
                     UserId = createdComment.UserId,
-                    PostId = createdComment.PostId
+                    PostId = createdComment.PostId,
+                    AuthorName = user.Username,
                 };
-
+                Console.WriteLine($"Created comment - web api: {commentDto.Body} by {commentDto.AuthorName}");
                 return Created($"/posts/{postId}/comments/{commentDto.Id}", commentDto);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine("koji kurac");
                 return StatusCode(500, e.Message); // Internal Server Error
             }
         }
+
 
         // GET: /posts/{postId}/comments/{id}
         [HttpGet("{id}")]
@@ -57,13 +69,17 @@ namespace WebAPI.Controllers
                     return NotFound(); // 404 Not Found
                 }
 
-                // Map to DTO
+                // Get the user to fetch AuthorName
+                var user = await userRepo.GetSingleAsync(comment.UserId);
+
+                // Map the comment to DTO including AuthorName
                 CommentDto commentDto = new CommentDto
                 {
                     Id = comment.Id,
                     Body = comment.Body,
                     UserId = comment.UserId,
-                    PostId = comment.PostId
+                    PostId = comment.PostId,
+                    AuthorName = user.Username  
                 };
 
                 return Ok(commentDto);
@@ -75,39 +91,43 @@ namespace WebAPI.Controllers
             }
         }
 
+
         // GET: /posts/{postId}/comments
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CommentDto>>> GetMany(int postId, [FromQuery] int? userId)
+        public async Task<IResult> GetMany(int postId, [FromQuery] int? userId)
         {
             try
             {
-                var comments =  commentRepo.GetMany();
+                IQueryable<Comment> queryableComments = commentRepo.GetMany();
 
-                // Filter by post ID
-                comments = comments.Where(c => c.PostId == postId);
+                // Filter by postId
+                queryableComments = queryableComments.Where(c => c.PostId == postId);
 
-                // Filter by user ID if provided
+                // Filter by userId if provided
                 if (userId.HasValue)
                 {
-                    comments = comments.Where(c => c.UserId == userId.Value);
+                    queryableComments = queryableComments.Where(c => c.UserId == userId.Value);
                 }
 
-                var commentDtos = comments.Select(c => new CommentDto
+                // Fetch the AuthorName for each comment
+                List<CommentDto> comments = queryableComments.Select(comment => new CommentDto
                 {
-                    Id = c.Id,
-                    Body = c.Body,
-                    UserId = c.UserId,
-                    PostId = c.PostId
+                    Id = comment.Id,
+                    Body = comment.Body,
+                    UserId = comment.UserId,
+                    PostId = comment.PostId,
+                    AuthorName = userRepo.GetSingleAsync(comment.UserId).Result.Username
                 }).ToList();
-
-                return Ok(commentDtos);
+                return Results.Ok(comments);
+                
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return StatusCode(500, e.Message);
+                return Results.NotFound(e.Message);
             }
         }
+
 
         // PUT: /posts/{postId}/comments/{id}
         [HttpPut("{id}")]
@@ -118,14 +138,13 @@ namespace WebAPI.Controllers
                 var comment = await commentRepo.GetSingleAsync(id);
                 if (comment == null || comment.PostId != postId)
                 {
-                    return NotFound(); // 404 Not Found
+                    return NotFound(); 
                 }
 
-                // Update comment body
                 comment.Body = request.Body;
                 await commentRepo.UpdateAsync(comment);
 
-                return NoContent(); // 204 No Content
+                return NoContent(); 
             }
             catch (Exception e)
             {

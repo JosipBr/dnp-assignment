@@ -1,0 +1,99 @@
+@page "/post-details/{postId:int}"
+@using System.Security.Claims
+@using ApiContracts.Post
+@using ApiContracts.Comment
+@using BlazorApp.Components.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IPostService PostService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>Post Detail</PageTitle>
+
+<h3>Post Detail</h3>
+
+@if (post == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">@post.Title</h5>
+            <p class="card-text">@post.Body</p>
+            <p class="card-text">Author: @post.UserName</p>
+            <p class="card-text">Likes: @post.Likes</p>
+            <p class="card-text">Dislikes: @post.Dislikes</p>
+            <p class="card-text">User id: @post.UserId</p>
+            <h6>Comments</h6>
+            <ul>
+                @foreach (var comment in comments)
+                {
+                    <li>@comment.Body - <em>@comment.AuthorName</em></li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <h3>Add a Comment</h3>
+    <EditForm Model="@newComment" OnValidSubmit="HandleCommentSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="commentBody">Comment</label>
+            <InputTextArea id="commentBody" class="form-control" @bind-Value="newComment.Body" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Comment</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int postId { get; set; }
+    private PostDto post;
+    private List<CommentDto> comments = new List<CommentDto>();
+    private CommentDto newComment = new CommentDto();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPostDetails();
+    }
+
+    private async Task LoadPostDetails()
+    {
+        post = await PostService.GetPostByIdAsync(postId);
+        comments = await PostService.GetCommentsByPostIdAsync(postId);
+    }
+
+    private async Task HandleCommentSubmit()
+    {
+        // Get current user ID from authentication state
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim != null)
+            {
+                // Set the logged-in user's ID to the comment
+                newComment.UserId = int.Parse(userIdClaim.Value);
+                newComment.AuthorName = user.Identity.Name;
+
+                Console.WriteLine($"Submitting comment: {newComment.Body} by {newComment.AuthorName}");
+                await PostService.AddCommentToPostAsync(postId, newComment);
+
+                // Reload post details after submission
+                await LoadPostDetails();
+                Console.WriteLine($"Comments count after submit: {comments.Count}");
+                foreach (var comment in comments)
+                {
+                    Console.WriteLine($"Comment: {comment.Body} by {comment.AuthorName}");
+                }
+
+                // Reset newComment for the next submission
+                newComment = new CommentDto();
+            }
+        }
+    }
+}

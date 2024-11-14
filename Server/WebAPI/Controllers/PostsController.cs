@@ -19,12 +19,25 @@ public class PostsController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Post>> CreatePostAsync([FromBody] CreatePostDto request)
+    public async Task<ActionResult<PostDto>> CreatePostAsync([FromBody] CreatePostDto request)
     {
         try
         {
+            // Create the post using the provided data
             Post post = new(request.Body, request.Title, request.UserId);
+        
+            // Add the post to the repository
             Post created = await postRepo.AddAsync(post);
+        
+            // Get the user associated with the post using UserId
+            User user = await userRepo.GetSingleAsync(request.UserId);
+        
+            if (user == null)
+            {
+                return NotFound("User not found"); 
+            }
+
+
             PostDto postDto = new PostDto
             {
                 Id = created.Id,
@@ -32,7 +45,8 @@ public class PostsController: ControllerBase
                 Body = created.Body,
                 UserId = created.UserId,
                 Likes = created.Likes,
-                Dislikes = created.Dislikes
+                Dislikes = created.Dislikes,
+                UserName = user.Username 
             };
             
             return Created($"/Posts/{postDto.Id}", postDto);
@@ -43,6 +57,7 @@ public class PostsController: ControllerBase
             return StatusCode(500, e.Message);
         }
     }
+
     
     //GET: /Posts/{id}
     [HttpGet("{id}")]
@@ -51,12 +66,22 @@ public class PostsController: ControllerBase
         try
         {
             Post post = await postRepo.GetSingleAsync(id);
+            User user = await userRepo.GetSingleAsync(post.UserId);
             if (post == null)
             {
                 return Results.NotFound("post not found");
             }
             
-            return Results.Ok(post);
+            PostDto dto = new()
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Body = post.Body,
+                UserId = post.UserId,
+                UserName = user.Username
+            };
+            
+            return Results.Ok(dto);
 
         }
         catch (Exception e)
@@ -72,16 +97,26 @@ public class PostsController: ControllerBase
     {
         try
         {
-            var posts = postRepo.GetManyAsync();
+            IQueryable<Post> queryablePosts = postRepo.GetManyAsync();
             if (!string.IsNullOrWhiteSpace(title))
             {
-                posts = posts.Where(p => p.Title.Contains(title));
+                queryablePosts = queryablePosts.Where(p => p.Title.Contains(title));
             }
 
             if (userId.HasValue)
             {
-                posts = posts.Where(p => p.UserId == userId.Value);
+                queryablePosts = queryablePosts.Where(p => p.UserId == userId.Value);
             }
+
+            List<PostDto> posts = queryablePosts.Select(post => new PostDto
+                {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Body = post.Body,
+                    UserId = post.UserId,
+                    UserName = userRepo.GetSingleAsync(post.UserId).Result.Username
+                })
+                .ToList();
             return Results.Ok(posts);
             
         }

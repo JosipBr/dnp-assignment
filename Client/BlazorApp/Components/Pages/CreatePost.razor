@@ -1,0 +1,100 @@
+@page "/create-post"
+@using System.Security.Claims
+@using ApiContracts.Post
+@using BlazorApp.Components.Services
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IPostService PostService
+@inject AuthenticationStateProvider AuthProvider
+
+<PageTitle>Create a post</PageTitle>
+
+<h3>Create a post</h3>
+
+<EditForm Model="@newPost" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div class="form-group">
+        <label>Title</label>
+        <InputText id="title" class="form-control" @bind-Value="newPost.Title"></InputText>
+        <ValidationMessage For="@(() => newPost.Title)" />
+    </div>
+
+    <div class="form-group">
+        <label for="body">Body</label>
+        <InputTextArea id="body" class="form-control" @bind-Value="newPost.Body" />
+        <ValidationMessage For="@(() => newPost.Body)" />
+    </div>
+
+    <!-- UserId will be automatically populated based on the current user -->
+    <div class="form-group">
+        <label for="userId">User ID</label>
+        <InputNumber id="userId" class="form-control" @bind-Value="newPost.UserId" disabled />
+        <ValidationMessage For="@(() => newPost.UserId)" />
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Create Post</button>
+    </div>
+</EditForm>
+
+@if (isSuccess)
+{ 
+    <div class="alert alert-success">
+        Post created successfully!
+    </div>
+}
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+
+@code {
+    private CreatePostDto newPost = new CreatePostDto
+{
+    Title = string.Empty,
+    Body = string.Empty,
+    UserId = 0
+};
+
+private bool isSuccess = false;
+private string? errorMessage;
+
+protected override async Task OnInitializedAsync()
+{
+    var authState = await AuthProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+
+
+    if (user.Identity.IsAuthenticated)
+    {
+        var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+        if (userIdClaim != null)
+            {
+                newPost.UserId = int.Parse(userIdClaim.Value); // Set the UserId field
+            }
+    }
+    else
+    {
+        errorMessage = "You must be logged in to create a post.";
+    }
+}
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await PostService.AddPostAsync(newPost);
+            isSuccess = true;
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            isSuccess = false;
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+}

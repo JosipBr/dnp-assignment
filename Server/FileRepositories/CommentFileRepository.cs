@@ -20,7 +20,7 @@ public class CommentFileRepository: ICommentRepository
     {
         string commentsAsJson = await File.ReadAllTextAsync(filePath);
         List<Comment>? comments = JsonSerializer.Deserialize<List<Comment>>(commentsAsJson);
-        int maxId = comments.Count > 0 ? comments.Max(x => x.Id)  : 1;
+        int maxId = comments.Count > 0 ? comments.Max(x => x.Id)+1  : 1;
         comment.Id = maxId;
         comments.Add(comment);
         commentsAsJson = JsonSerializer.Serialize(comments);
