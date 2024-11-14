@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IPostService PostService
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Post Detail</PageTitle>
 
@@ -54,9 +54,12 @@ else
     private List<CommentDto> comments = new List<CommentDto>();
     private CommentDto newComment = new CommentDto();
 
+    private string currentUserId;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadPostDetails();
+        await SetCurrentUserId(); 
     }
 
     private async Task LoadPostDetails()
@@ -65,35 +68,50 @@ else
         comments = await PostService.GetCommentsByPostIdAsync(postId);
     }
 
-    private async Task HandleCommentSubmit()
+    private async Task SetCurrentUserId()
     {
-        // Get current user ID from authentication state
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+
+        Console.WriteLine($"Is user authenticated: {user.Identity.IsAuthenticated}");
 
         if (user.Identity.IsAuthenticated)
         {
-            var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
-            if (userIdClaim != null)
+            // Extract user ID from claims and log it for debugging
+            currentUserId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"Current User ID: {currentUserId}");
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated.");
+            currentUserId = null; // Ensure it's cleared if user isn't authenticated
+        }
+    }
+
+
+
+    private async Task HandleCommentSubmit()
+    {
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            newComment.UserId = int.Parse(currentUserId);  // Use the updated UserId
+            newComment.PostId = postId; // Ensure the correct PostId is set here
+            
+            Console.WriteLine($"Submitting comment: {newComment.Body} by {newComment.AuthorName} for PostId {newComment.PostId}");
+            await PostService.AddCommentToPostAsync(postId, newComment);
+
+            await LoadPostDetails();
+            Console.WriteLine($"Comments count after submit: {comments.Count}");
+            foreach (var comment in comments)
             {
-                // Set the logged-in user's ID to the comment
-                newComment.UserId = int.Parse(userIdClaim.Value);
-                newComment.AuthorName = user.Identity.Name;
-
-                Console.WriteLine($"Submitting comment: {newComment.Body} by {newComment.AuthorName}");
-                await PostService.AddCommentToPostAsync(postId, newComment);
-
-                // Reload post details after submission
-                await LoadPostDetails();
-                Console.WriteLine($"Comments count after submit: {comments.Count}");
-                foreach (var comment in comments)
-                {
-                    Console.WriteLine($"Comment: {comment.Body} by {comment.AuthorName}");
-                }
-
-                // Reset newComment for the next submission
-                newComment = new CommentDto();
+                Console.WriteLine($"Comment: {comment.Body} by {comment.AuthorName} on PostId {comment.PostId}");
             }
+
+            newComment = new CommentDto(); // Reset the comment form
+        }
+        else
+        {
+            Console.WriteLine("User not logged in, comment not submitted.");
         }
     }
 }

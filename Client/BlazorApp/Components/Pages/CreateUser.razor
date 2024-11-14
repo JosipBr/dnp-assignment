@@ -1,4 +1,4 @@
-@page "/"
+@page "/create-user"
 @inject NavigationManager NavMgr
 @inject IUserService UserService
 @using ApiContracts
@@ -10,7 +10,7 @@
 
 
 Here you can browse interesting posts. 
-<button @onclick='() => NavMgr.NavigateTo("login")'>go to login</button>
+<button @onclick='() => NavMgr.NavigateTo("/")'>go to login</button>
 
 <EditForm Model="@newUser" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
