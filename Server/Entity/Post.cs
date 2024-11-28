@@ -5,16 +5,14 @@ public class Post
     public int Id { get; set; }
     public string Title { get; set; }
     public string Body { get; set; }
+    public User User { get; set; }
     public int UserId { get; set; }
     public int Likes { get; set; }
     public int Dislikes { get; set; }
+    public List<Comment> Comments { get; set; }
 
-    public Post(string title, string body, int userId)
+    public Post()
     {
-        Title = title;
-        Body = body;
-        UserId = userId;
-        Likes = 0;
-        Dislikes = 0;
+        
     }
 }

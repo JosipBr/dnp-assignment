@@ -92,7 +92,7 @@ public class AddCommentView
             }
         }
 
-        Comment comment = new Comment(commentBody, postId, userId);
+        Comment comment = new Comment();
 
         var result = await _commentRepository.AddAsync(comment);
 

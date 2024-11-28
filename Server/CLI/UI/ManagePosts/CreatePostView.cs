@@ -41,7 +41,7 @@ public class CreatePostView
             return;
         }
 
-        Post newPost = new Post(title, description, user.Id);
+        Post newPost = new Post();
         
         var result = await _postRepository.AddAsync(newPost);
         

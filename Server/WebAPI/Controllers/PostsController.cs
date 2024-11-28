@@ -24,7 +24,12 @@ public class PostsController: ControllerBase
         try
         {
             // Create the post using the provided data
-            Post post = new(request.Body, request.Title, request.UserId);
+            Post post = new()
+            {
+                Body = request.Body,
+                Title = request.Title,
+                UserId = request.UserId,
+            };
         
             // Add the post to the repository
             Post created = await postRepo.AddAsync(post);

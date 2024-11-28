@@ -21,7 +21,11 @@ public class UsersController : ControllerBase
     {
         try
         {
-            User user = new(request.UserName, request.Password);
+            User user = new()
+            {
+                Username = request.UserName,
+                Password = request.Password
+            };
             User created = await userRepo.AddAsync(user);
             UserDto dto = new() { Id = created.Id, UserName = created.Username };
             return Created($"/Users/{dto.Id}", created);

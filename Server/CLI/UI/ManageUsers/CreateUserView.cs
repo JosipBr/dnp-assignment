@@ -28,7 +28,7 @@ public class CreateUserView
             return;
         }
 
-        User newUser = new User(userName, password);
+        User newUser = new User();
         
         User result = await _userRepository.AddAsync(newUser);
 

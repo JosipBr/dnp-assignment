@@ -7,15 +7,7 @@ public class PostInMemoryRepository: IPostRepository
 {
     private readonly List<Post> posts = new();
 
-    public PostInMemoryRepository()
-    {
-        _ = AddAsync(new Post("I love pizza", "Pizza is SOOO goood trust me bro", 1)).Result;
-        _ = AddAsync(new Post( "I love anime", "I am a weeb", 2)).Result;
-        _ = AddAsync(new Post("I am depressed", "I feel down 24/7", 3)).Result;
-        _ = AddAsync(new Post("Lets go party", "I NEED TO DRINK BROOOO", 4)).Result;
-        _ = AddAsync(new Post("How to make money", "This post will teach you how to make money", 1)).Result;
-        _ = AddAsync(new Post("I lost my cat", "My black and white cat ran away from my apartment yesterday. Has anyone seen it? ", 3)).Result;
-    }
+   
 
     public Task<Post> AddAsync(Post post)
     {

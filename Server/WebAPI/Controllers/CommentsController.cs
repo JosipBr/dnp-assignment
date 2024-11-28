@@ -27,7 +27,12 @@ namespace WebAPI.Controllers
         {
             try
             {
-                Comment comment = new Comment(request.Body, request.UserId, postId);
+                Comment comment = new Comment()
+                {
+                    PostId = postId,
+                    Body = request.Body,
+                    UserId = request.UserId,
+                };
 
                 Comment createdComment = await commentRepo.AddAsync(comment);
 
